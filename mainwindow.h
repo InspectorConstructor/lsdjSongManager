@@ -45,7 +45,7 @@ private slots:
 
     void on_mergeFileView_clicked(const QModelIndex &index);
 
-    void on_testButton_clicked();
+    void on_resetButton_clicked();
 
     void on_splitSelectSavButton_clicked();
 

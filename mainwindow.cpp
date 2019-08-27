@@ -18,17 +18,19 @@ MainWindow::MainWindow(QWidget *parent) :
     m_split_sav(nullptr)
 {
     ui->setupUi(this);
-    ui->testButton->setHidden(true);
+    ui->toolBar->setHidden(true);
 
-    // make the lemon work
+    // todo: use statusBar to indicate status
+    // ui->statusBar->showMessage("welcome", 5000);
+
+    // make the lemon
     QPixmap bkgnd(":/images/lemon.jpg");
     bkgnd = bkgnd.scaled(ui->lemon->size(), Qt::KeepAspectRatio);
     ui->lemon->setPixmap(bkgnd);
 
     resetSplit();
     resetMerge();
-    updateSplitEnables();
-    updateMergeEnables();
+    toHome();
 }
 
 MainWindow::~MainWindow()
@@ -42,10 +44,12 @@ MainWindow::~MainWindow()
 void MainWindow::toHome()
 {
     ui->stackedWidget->setCurrentIndex(0);
+    ui->resetButton->setEnabled(false);
 }
 
 void MainWindow::toSplit()
 {
+    ui->resetButton->setEnabled(true);
     resetSplit();
     updateSplitEnables();
     ui->stackedWidget->setCurrentIndex(1);
@@ -53,6 +57,7 @@ void MainWindow::toSplit()
 
 void MainWindow::toMerge()
 {
+    ui->resetButton->setEnabled(true);
     resetMerge();
     updateMergeEnables();
     ui->stackedWidget->setCurrentIndex(2);
@@ -107,8 +112,13 @@ void MainWindow::updateSplitEnables()
 
 void MainWindow::updateMergeEnables()
 {
-    bool en = QFile::exists(ui->mergeDirectoryLine->text());
-    en = en && !ui->mergeFileView->selectionModel()->selectedIndexes().empty();
+    bool en = false;
+    if (QFile::exists(ui->mergeDirectoryLine->text()))
+    {
+        auto model_p = ui->mergeFileView->selectionModel();
+        if (model_p != nullptr)
+            en = !model_p->selectedIndexes().empty();
+    }
     ui->doMergeButton->setEnabled(en);
 }
 
@@ -157,23 +167,18 @@ void MainWindow::mergeSongs(QStringList &songFiles)
     }
 
     // SUCCESS
-//    QFileDialog dialog(this);
-  //  dialog.setFileMode(QFileDialog::AnyFile);
-    //if (dialog.exec())
-    {
-        QString selected = QFileDialog::getSaveFileName(this, "Name your new .sav file", QString(), "*.sav");
+    QString selected = QFileDialog::getSaveFileName(this, "Name your new .sav file", QString(), "*.sav");
 
-        if (selected.isEmpty())
-            return;
+    if (selected.isEmpty())
+        return;
 
-        // dialog.selectedFiles().first();
-        lsdj_sav_write_to_file(sav, selected.toLocal8Bit(), &err);
-        if (lsdj_check_err(err))
-            return;
+    // dialog.selectedFiles().first();
+    lsdj_sav_write_to_file(sav, selected.toLocal8Bit(), &err);
+    if (lsdj_check_err(err))
+        return;
 
-        QMessageBox::information(this, "Merge Success", "Successfully merged " +
-                                                        QString::number(i) + " .lsdsng files!");
-    }
+    QMessageBox::information(this, "Merge Success", "Successfully merged " +
+                                                    QString::number(i) + " .lsdsng files!");
 }
 
 void MainWindow::on_toSplitButton_clicked()
@@ -189,6 +194,7 @@ void MainWindow::on_toMergeButton_clicked()
 void MainWindow::on_selectMergeDirectoryButton_clicked()
 {
     QFileDialog d(this);
+    d.setFileMode(QFileDialog::Directory);
 
     d.setOption(QFileDialog::ShowDirsOnly, true);
 
@@ -199,10 +205,9 @@ void MainWindow::on_selectMergeDirectoryButton_clicked()
 
         if (QFile::exists(outputPath)) // extra safe!
         {
-            //m_model = new QFileSystemModel(ui->mergeFileView);
             ui->mergeFileView->setEnabled(true);
             ui->mergeFileView->setModel(m_model);
-            m_model->setFilter(QDir::Files /*| QDir::AllDirs*/ );
+            m_model->setFilter(QDir::Files);
             m_model->setReadOnly(true);
             m_model->setRootPath(outputPath);
             m_model->setNameFilterDisables(false); // true shows disabled files, false hides 'em.
@@ -257,12 +262,9 @@ void MainWindow::on_mergeFileView_clicked(const QModelIndex &index)
             ; */
 }
 
-void MainWindow::on_testButton_clicked()
+void MainWindow::on_resetButton_clicked()
 {
-    QFileDialog dialog;
-    dialog.setFileMode(QFileDialog::ExistingFiles);
-    dialog.setNameFilter("*.lsdsng");
-    dialog.exec();
+    toHome();
 }
 
 void MainWindow::on_splitSelectSavButton_clicked()
@@ -278,11 +280,11 @@ void MainWindow::on_splitSelectSavButton_clicked()
 
 void MainWindow::on_splitSavLine_textChanged(const QString &arg1)
 {
-    Q_UNUSED(arg1)
     ui->splitSongList->clear();
     updateSplitEnables();
 
-    if (QFile::exists(arg1))
+    QFileInfo savFile(arg1);
+    if (savFile.exists())
     {
         lsdj_error_t *err = nullptr;
         m_split_sav = lsdj_sav_read_from_file(arg1.toLocal8Bit(), &err);
@@ -322,6 +324,9 @@ void MainWindow::on_splitSavLine_textChanged(const QString &arg1)
 
                 ui->splitSongList->focusWidget();
             }
+
+            if (ui->splitSelectOutputLine->text().isEmpty())
+                ui->splitSelectOutputLine->setText(savFile.path());
         }
     }
 }
@@ -398,10 +403,15 @@ void MainWindow::on_doSplitButton_clicked()
             break;
         }
     }
+
     if (success)
-        QMessageBox::information(this, "Split Success", "Successfully created " + QString::number(selected.length()) + " .lsdsng files.");
+        QMessageBox::information(this, "Split Success", "Successfully created "
+                                                        + QString::number(selected.length())
+                                                        + " .lsdsng files.");
     else
-        QMessageBox::information(this, "Split Failure", "Split failed after creating " + QString::number(i) + " .lsdsng files.");
+        QMessageBox::information(this, "Split Failure", "Split failed after creating "
+                                                        + QString::number(i)
+                                                        + " .lsdsng files.");
 }
 
 void MainWindow::on_splitSongList_itemSelectionChanged()
