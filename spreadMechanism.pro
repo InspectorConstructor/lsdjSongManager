@@ -28,12 +28,16 @@ CONFIG(release, debug|release) {
     CONFIG += optimize_full
 }
 
-# liblsdj!
-# don't install liblsdj to the same place as brew: there are serious image library conflicts
-#LIBS += -L/opt/nick/lib -llsdj
+win32 {
+    INCLUDEPATH += "C:/Users/Nicholas St.Pierre/Code/BUILT/include"
+    #LIBS += "/NODEFAULTLIB:C:/Users/Nicholas St.Pierre/Code/BUILT/lib/lsdj.lib"
+    LIBS += "C:/Users/Nicholas St.Pierre/Code/BUILT/lib/lsdj.lib"
+}
 
-#STATIC LSDJ
-LIBS += /opt/nick/lib/liblsdj.a
+unix {
+    # note: don't install liblsdj to the same place as brew: there are serious image library conflicts
+    LIBS += /opt/nick/lib/liblsdj.a
+}
 
 INCLUDEPATH += /opt/nick/include
 

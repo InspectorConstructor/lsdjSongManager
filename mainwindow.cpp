@@ -127,7 +127,7 @@ bool lsdj_check_err(lsdj_error_t *err)
     if (err)
     {
         QString msg = "Error: ";
-        msg.append(err->message);
+        msg.append(lsdj_error_get_c_str(err));
         qCritical() << msg;
         QMessageBox::critical(nullptr, "Merge failed", msg);
         lsdj_error_free(err);
@@ -298,7 +298,7 @@ void MainWindow::on_splitSavLine_textChanged(const QString &arg1)
         }
         else
         {
-            for (int i = 0 ; i < LSDJ_SAV_PROJECT_COUNT ; ++i)
+            for (int i = 0 ; i < 32 ; ++i)
             {
                 char name[LSDJ_PROJECT_NAME_LENGTH+1];
                 memset(name, 0, LSDJ_PROJECT_NAME_LENGTH+1);
