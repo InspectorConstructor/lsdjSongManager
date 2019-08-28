@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_split_sav(nullptr)
 {
     ui->setupUi(this);
-    ui->toolBar->setHidden(true);
 
     // todo: use statusBar to indicate status
     // ui->statusBar->showMessage("welcome", 5000);
