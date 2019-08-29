@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QPixmap>
+#include <QFileInfo>
 #include <QFile>
 #include <QDir>
 #include <QDebug>
@@ -78,7 +79,7 @@ void MainWindow::resetMerge()
     updateMergeEnables();
 }
 
-#include <QFileInfo>
+
 void MainWindow::updateSplitEnables()
 {
     bool haveSav = false, validSav = false,
@@ -250,15 +251,8 @@ void MainWindow::on_doMergeButton_clicked()
 
 void MainWindow::on_mergeFileView_clicked(const QModelIndex &index)
 {
-    Q_UNUSED(index)
-    /*
-    qDebug() << index
-             << (m_model->isDir(index) ? "this is a directory" : "this is a file")
-             << m_model->filePath(index) // full path including name
-             << m_model->fileName(index) // just the name
-             << m_model->fileInfo(index) //
-             << m_model->type(index) // unhelpful-ish
-            ; */
+    Q_UNUSED(index)    
+    updateMergeEnables();
 }
 
 void MainWindow::on_resetButton_clicked()
