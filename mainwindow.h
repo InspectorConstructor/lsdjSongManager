@@ -65,6 +65,8 @@ private slots:
 
     void on_splitSongList_itemSelectionChanged();
 
+    void directoryLoaded(const QString &path);
+
 private:
     Ui::MainWindow *ui;
     QFileSystemModel *m_model;

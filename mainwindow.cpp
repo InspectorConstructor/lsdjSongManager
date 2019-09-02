@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    connect(m_model, &QFileSystemModel::directoryLoaded, this, &MainWindow::directoryLoaded);
+
     // todo: use statusBar to indicate status
     // ui->statusBar->showMessage("welcome", 5000);
 
@@ -410,4 +412,10 @@ void MainWindow::on_doSplitButton_clicked()
 void MainWindow::on_splitSongList_itemSelectionChanged()
 {
     updateSplitEnables();
+}
+
+void MainWindow::directoryLoaded(const QString &path)
+{
+    qDebug() << "LOAD";
+    this->updateMergeEnables();
 }
